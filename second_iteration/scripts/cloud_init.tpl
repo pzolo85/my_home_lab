@@ -1,0 +1,14 @@
+#cloud-config
+hostname: $VM_NAME
+users:
+  - name: debian
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDISl7M6M9P+uK47NAXFP06YlljRofLy2SdaX01gVojhBU022+r6ZRkkG3OrwnTsCym3pmc8pbqhZ8nT9TqP1BPkxPpUMFg0EQf3f5fFrlLxXTKz+vrmxL27tj+wmQjMbCDSe1b0sqnHETrakDcdaD/uQF3pfizYsUg2lzwnduOay/HDdJI4OgbeBoA2zlishBYhQMx2sHxh6FTrPsSI637QmaAVXHlp3UF2I/UUoANZJH96PB5WAXXBZRRuS1sNIQ5ZU16f+PbKYBK+LjtyIMfZvwNnlSKyJ/GkrKDBGxNQZzFg5+kCar5AZYXjBS3TuhE9Z/v9vDzz/K49t2frEAzBYKogn6U/LQxOFtqIcH+1VImT5RUrddCV7NgU9P+ZKR2w9UL4lHLj/NeLkdCxxbxpmY1zOn1lG2IYt8CvTINnQMMRze4kZRO/5H50gRNdpS6UzyEoBEmi3Ki3BRhFELwvSLor2G/HRN5lsgkIRiv+SPe5wnRh0EpcO8GS/zIeLc=
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCc7PDTa3O8r2iMinQ43ZW0gCifqWyNK5Z6nHqwDnAplcgT4kZQ40tEpPDNZm6Kh20ppnNcqOPY95U4QE7fh1nIeiL5USdzikIdyzvCuDKIqcUiUFehflGM2vrnb4OPafMQ6dwvP/y+bwjMHMw4oYQ157+hxCDBo1pTVficcACTnePCQEivXpgV9O/YmTPPjsHIl6L6JVCQeNLRyymjquoSxKWnk5g+GQsP0y27Vbw+qvoOpgeiNLlTK4v0sN0ZntXVCXQ3rM3opdIBNEhDNTw0rMNgl274vzJ4CfObDpZq/68DcQLys9r/NM3MDX0GENtpYoSaTK6t3Gp3L2XYvzxxil6qsENr+Wq0+yfbXXSc1Ojy8lP+0mvxjMy49aQVGOqIbKlFEILiehKwPdOYsklRy7j3yhv8b1xS8X9r6PhXAGxuIKlKMA3/nlrqeOdCXerfo/fs6fXrQ6HT5Mfem/1JpIh68liAFLK9Anwgr8K998mSKrUXWJTCT08tl/Ux2Fk=
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+package_update: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - echo "welcome to $VM_NAME" > /etc/motd
