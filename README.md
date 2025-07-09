@@ -24,9 +24,13 @@ SUPPORT_URL="https://www.debian.org/support"
 BUG_REPORT_URL="https://bugs.debian.org/"
 ```
 
-# Monitoring 
+# Monitoring ⏱️
 
 The system is [monitored](monitoring.md) exernally with a free tier of uptimerobot.
+
+# DDNS 🗺️
+
+I use [ddns](https://github.com/qdm12/ddns-updater/tree/master) to update the dynamic IP set by my ISP on all my domains in DigitalOcean. 
 
 # Iterations 
 
