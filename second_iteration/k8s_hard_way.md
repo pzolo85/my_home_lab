@@ -197,10 +197,18 @@ root@jumpbox:~/kubernetes-the-hard-way# openssl x509 -in kube-api-server.crt  -t
 ```
 
 ## Worker nodes 
+
+### CNI 
 - The following config for cni is copied over to the worker nodes.
 - CNI plugin job is to give IP addresses to pods via IPAM 
 - `kube-proxy` job is to manage virtual service cluster IP (used by services) and link them to a cidr IP (used in pods) via iptabes.
+- When the kubelet is told to deploy a pod, it deploys with containerd, and it's containerd that goes and tells CNI to add an interface. 
 ```bash
+root@node-1:~# grep -R cni /etc/containerd/config.toml 
+[plugins."io.containerd.grpc.v1.cri".cni]
+  bin_dir = "/opt/cni/bin"
+  conf_dir = "/etc/cni/net.d"
+
 root@jumpbox:~/kubernetes-the-hard-way# cat 10-bridge.conf  | jq
 {
   "cniVersion": "1.0.0",
@@ -233,64 +241,27 @@ root@jumpbox:~/kubernetes-the-hard-way# cat configs/99-loopback.conf | jq
   "name": "lo",
   "type": "loopback"
 }
-
-root@jumpbox:~/kubernetes-the-hard-way# cat configs/kube-proxy-config.yaml  | yq 
-{
-  "kind": "KubeProxyConfiguration",
-  "apiVersion": "kubeproxy.config.k8s.io/v1alpha1",
-  "clientConnection": 
-  {
-    "kubeconfig": "/var/lib/kube-proxy/kubeconfig"
-  },
-  "mode": "iptables",
-  "clusterCIDR": "10.200.0.0/16"
-}
 ```
+
+### kubelet
 - The kubelet is configued to talk to `kube-api-server` via webhook for authorization
 - Authentication is done via CA certs
-- The kubelet knows how to register to the `server` by using the `kubeconfig`
-- The kubelet config specifies the container runtime endpoint used to create pods. 
-```bash
-root@node-1:~# cat /var/lib/kubelet/kubelet-config.yaml | yq 
-{
-  "kind": "KubeletConfiguration",
-  "apiVersion": "kubelet.config.k8s.io/v1beta1",
-  "address": "0.0.0.0",
-  "authentication": {
-    "anonymous": {
-      "enabled": false
-    },
-    "webhook": {
-      "enabled": true
-    },
-    "x509": {
-      "clientCAFile": "/var/lib/kubelet/ca.crt"
-    }
-  },
-  "authorization": {
-    "mode": "Webhook"
-  },
-  "cgroupDriver": "systemd",
-  "containerRuntimeEndpoint": "unix:///var/run/containerd/containerd.sock",
-  "enableServer": true,
-  "failSwapOn": false,
-  "maxPods": 16,
-  "memorySwap": {
-    "swapBehavior": "NoSwap"
-  },
-  "port": 10250,
-  "resolvConf": "/etc/resolv.conf",
-  "registerNode": true,
-  "runtimeRequestTimeout": "15m",
-  "tlsCertFile": "/var/lib/kubelet/kubelet.crt",
-  "tlsPrivateKeyFile": "/var/lib/kubelet/kubelet.key"
-}
+- The kubelet knows how to register to the `server` by using the `kubeconfig`.
 
-root@node-1:~# cat /etc/systemd/system/kubelet.service 
-[...]
-ExecStart=/usr/local/bin/kubelet \
-  --config=/var/lib/kubelet/kubelet-config.yaml \
-  --kubeconfig=/var/lib/kubelet/kubeconfig \
-  --v=2
-[...]
+### CRI
+- The following files are copied to the worker 
+```bash
+configs/containerd-config.toml
+units/containerd.service 
+
+crictl                    <-- ctl tool to troubleshoot containers compatible with cri
+kube-proxy
+kubelet 
+runc                      <-- low level tool for spawning and running containers according to the OCI spec
+
+containerd                <-- container runtime with an emphasis on simplicity, robustness and portability
+containerd-shim-runc-v2   <-- containerd uses the containerd-shim-runc-v2 to interact with runc and create the container's isolated environment. The shim also handles the lifecycle of the container, including its start, stop, and deletion.
 ```
+- The kubelet config specifies the container runtime endpoint used to create pods. 
+
+## Test 
